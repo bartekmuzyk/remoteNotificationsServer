@@ -1,2 +1,4 @@
 .idea
 mock.json
+venv
+__pycache__
