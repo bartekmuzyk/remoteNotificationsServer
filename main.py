@@ -21,15 +21,14 @@ if len(sys.argv) >= 3:
     mode: str = sys.argv[1]
     mode_arg: str = sys.argv[2]
 
-    match mode:
-        case "mock":
-            with open(mode_arg, encoding="utf8") as mock_file:
-                realtime_provider = MockProvider(json.load(mock_file))
-        case "network":
-            realtime_provider = NetworkProvider(ip=mode_arg, port=9999)
-        case _:
-            print(f"Niepoprawny tryb: {mode}", file=sys.stderr)
-            sys.exit(1)
+    if mode == "mock":
+        with open(mode_arg, encoding="utf8") as mock_file:
+            realtime_provider = MockProvider(json.load(mock_file))
+    elif mode == "network":
+        realtime_provider = NetworkProvider(ip=mode_arg, port=9999)
+    else:
+        print(f"Niepoprawny tryb: {mode}", file=sys.stderr)
+        sys.exit(1)
 
 
 app = QApplication([])
