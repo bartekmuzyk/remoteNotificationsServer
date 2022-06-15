@@ -1,4 +1,4 @@
-import time
+from typing import Callable
 import base64
 
 from PyQt5 import uic
@@ -6,32 +6,32 @@ from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QThreadPool, QObject
 from PyQt5.QtWidgets import QMainWindow, QLabel
 from PyQt5.QtGui import QPixmap, QImage
 
-from notifications.model import Notification
-from notifications.provider import BaseNotificationProvider
+from realtime.model import Notification
+from realtime.provider import RealtimeProvider
 
 
-class NotificationDownloaderSignals(QObject):
+class RealtimeWorkerSignals(QObject):
     notification_received = pyqtSignal(Notification)
+    time_updated = pyqtSignal(str)
 
 
-class NotificationDownloaderWorker(QRunnable):
-    signals: NotificationDownloaderSignals
-    provider: BaseNotificationProvider
+class RealtimeWorker(QRunnable):
+    signals: RealtimeWorkerSignals
+    provider: RealtimeProvider
 
-    def __init__(self, provider: BaseNotificationProvider):
+    def __init__(self, provider: RealtimeProvider):
         super().__init__()
-        self.signals = NotificationDownloaderSignals()
+        self.signals = RealtimeWorkerSignals()
         self.provider = provider
 
     @pyqtSlot()
     def run(self) -> None:
-        while self.provider.active:
-            notification_data = self.provider.get_available_notification()
+        def get_emitter(signal: pyqtSignal) -> Callable:
+            return lambda v: signal.emit(v)
 
-            if notification_data:
-                self.signals.notification_received.emit(notification_data)
-
-            time.sleep(1)
+        self.provider.notification_emitter = get_emitter(self.signals.notification_received)
+        self.provider.time_emitter = get_emitter(self.signals.time_updated)
+        self.provider.start()
 
 
 class MainWindow(QMainWindow):
@@ -41,27 +41,33 @@ class MainWindow(QMainWindow):
     appName: QLabel
     title: QLabel
     content: QLabel
+    timeDisplay: QLabel
 
-    def __init__(self, notification_provider: BaseNotificationProvider, windowed: bool):
+    time_display_format: str
+
+    def __init__(self, realtime_provider: RealtimeProvider, windowed: bool):
         super(MainWindow, self).__init__()
         self.notification_downloader_thread = QThreadPool()
         uic.loadUi("ui/main.ui", self)
+        self.time_display_format = self.timeDisplay.text()
         self._reset_controls()
         self.show()
 
         if not windowed:
             self.showFullScreen()
 
-        self._init_notification_worker(notification_provider)
+        self._init_realtime_worker(realtime_provider)
 
     def _reset_controls(self):
         self.appName.setText("")
         self.title.setText("")
         self.content.setText("")
+        self.timeDisplay.setText("Oczekuję na czas")
 
-    def _init_notification_worker(self, notification_provider: BaseNotificationProvider):
-        worker = NotificationDownloaderWorker(notification_provider)
+    def _init_realtime_worker(self, realtime_provider: RealtimeProvider):
+        worker = RealtimeWorker(realtime_provider)
         worker.signals.notification_received.connect(self._on_notification_received)
+        worker.signals.time_updated.connect(self._on_time_updated)
         self.notification_downloader_thread.start(worker)
 
     def _on_notification_received(self, notification: Notification):
@@ -69,3 +75,6 @@ class MainWindow(QMainWindow):
         self.appName.setText(notification.appName)
         self.title.setText(notification.title)
         self.content.setText(notification.content)
+
+    def _on_time_updated(self, time: str):
+        self.timeDisplay.setText(self.time_display_format % time)

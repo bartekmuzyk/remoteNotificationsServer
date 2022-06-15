@@ -1,3 +1,5 @@
+import os
+import signal
 from typing import Optional
 import json
 import sys
@@ -5,24 +7,32 @@ import sys
 from PyQt5.QtWidgets import QApplication
 
 from ui.window import MainWindow
-from notifications.provider import BaseNotificationProvider
-from notifications.providers import MockNotificationProvider, NetworkNotificationProvider
+from realtime.provider import RealtimeProvider
+from realtime.providers import MockNotificationProvider, NetworkProvider
 
-notification_provider: Optional[BaseNotificationProvider] = None
+realtime_provider: Optional[RealtimeProvider] = None
+windowed: bool = False
+
+if "windowed" in sys.argv:
+    sys.argv.remove("windowed")
+    windowed = True
 
 if len(sys.argv) >= 3:
-    mock_mode: bool = sys.argv[1] == "mock"
+    mode: str = sys.argv[1]
+    mode_arg: str = sys.argv[2]
 
-    if mock_mode:
-        with open(sys.argv[2], encoding="utf8") as mock_file:
-            notification_provider = MockNotificationProvider(json.load(mock_file))
-
-
-if not notification_provider:
-    notification_provider = NetworkNotificationProvider()
+    match mode:
+        case "mock":
+            with open(mode_arg, encoding="utf8") as mock_file:
+                realtime_provider = MockNotificationProvider(json.load(mock_file))
+        case "network":
+            realtime_provider = NetworkProvider(ip=mode_arg, port=9999)
+        case _:
+            print(f"Niepoprawny tryb: {mode}", file=sys.stderr)
+            sys.exit(1)
 
 
 app = QApplication([])
-main_window = MainWindow(notification_provider, windowed="windowed" in sys.argv)
+main_window = MainWindow(realtime_provider, windowed)
 app.exec()
-notification_provider.active = False  # Deactivate provider to tell the worker thread to stop its job
+os.kill(os.getpid(), signal.SIGINT)  # Ensure all threads get shut down
