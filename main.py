@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 
 from ui.window import MainWindow
 from realtime.provider import RealtimeProvider
-from realtime.providers import MockNotificationProvider, NetworkProvider
+from realtime.providers import MockProvider, NetworkProvider
 
 realtime_provider: Optional[RealtimeProvider] = None
 windowed: bool = False
@@ -24,7 +24,7 @@ if len(sys.argv) >= 3:
     match mode:
         case "mock":
             with open(mode_arg, encoding="utf8") as mock_file:
-                realtime_provider = MockNotificationProvider(json.load(mock_file))
+                realtime_provider = MockProvider(json.load(mock_file))
         case "network":
             realtime_provider = NetworkProvider(ip=mode_arg, port=9999)
         case _:

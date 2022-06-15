@@ -4,7 +4,7 @@ from realtime.model import Notification
 from realtime.provider import RealtimeProvider
 
 
-class MockNotificationProvider(RealtimeProvider):
+class MockProvider(RealtimeProvider):
     notification: Notification
 
     def __init__(self, data: dict):
