@@ -34,28 +34,44 @@ class NetworkProvider(RealtimeProvider):
         app.run(*self.address, debug=False)
 
     def _handle_notify_request(self):
-        req_data = request.data.decode("utf8")
+        notification: Notification
 
-        try:
-            data: dict = json.loads(req_data)
+        if request.content_type == "application/x-www-form-urlencoded":
+            notification = Notification(
+                appName=request.form.get("appName"),
+                icon=request.form.get("icon"),
+                title=request.form.get("title"),
+                content=request.form.get("content")
+            )
+        else:
+            req_data = request.data.decode("utf8")
 
-            if not isinstance(data, dict):
-                raise InvalidNotificationData
-        except Exception as e:
-            print(f"Nie udało się przetworzyć danych w żądaniu:\n{req_data}\n\n", file=sys.stderr)
-            traceback.print_tb(e.__traceback__, file=sys.stderr)
+            try:
+                data: dict = json.loads(req_data)
 
-            return
+                if not isinstance(data, dict):
+                    raise InvalidNotificationData
+            except Exception as e:
+                print(f"Nie udało się przetworzyć danych w żądaniu:\n{req_data}\n\n", file=sys.stderr)
+                traceback.print_tb(e.__traceback__, file=sys.stderr)
 
-        if "icon" not in data:
-            data["icon"] = ""
+                return
 
-        self.notification_emitter(Notification(**data))
+            if "icon" not in data:
+                data["icon"] = ""
+
+            notification = Notification(**data)
+
+        self.notification_emitter(notification)
 
         return "ok"
 
     def _handle_time_request(self):
         unix_timestamp = round(float(request.data.decode("utf8")))
+
+        if request.args.get("format", "s") == "ms":
+            unix_timestamp = int(unix_timestamp / 1000)
+
         time = datetime.fromtimestamp(unix_timestamp)
         formatted = time.strftime("%d %b %H:%M")
         self.time_emitter(formatted)

@@ -45,9 +45,9 @@ QLabel {
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>60</y>
-      <width>101</width>
-      <height>101</height>
+      <y>90</y>
+      <width>81</width>
+      <height>81</height>
      </rect>
     </property>
     <property name="text">
@@ -60,9 +60,9 @@ QLabel {
    <widget class="QLabel" name="appName">
     <property name="geometry">
      <rect>
-      <x>120</x>
+      <x>10</x>
       <y>60</y>
-      <width>351</width>
+      <width>461</width>
       <height>21</height>
      </rect>
     </property>
@@ -80,21 +80,21 @@ QLabel {
    <widget class="QLabel" name="title">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>90</y>
-      <width>351</width>
-      <height>71</height>
+      <x>100</x>
+      <y>80</y>
+      <width>371</width>
+      <height>101</height>
      </rect>
     </property>
     <property name="minimumSize">
      <size>
-      <width>351</width>
+      <width>0</width>
       <height>0</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
-      <width>351</width>
+      <width>371</width>
       <height>16777215</height>
      </size>
     </property>
@@ -175,7 +175,7 @@ QLabel {
      </font>
     </property>
     <property name="text">
-     <string>🕖 %s</string>
+     <string>%s</string>
     </property>
    </widget>
   </widget>
