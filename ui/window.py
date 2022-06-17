@@ -3,7 +3,7 @@ import base64
 
 from PyQt5 import uic
 from PyQt5.QtCore import QRunnable, pyqtSlot, pyqtSignal, QThreadPool, QObject
-from PyQt5.QtWidgets import QMainWindow, QLabel
+from PyQt5.QtWidgets import QMainWindow, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QImage
 
 from realtime.model import Notification
@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
     title: QLabel
     content: QLabel
     timeDisplay: QLabel
+    hideButton: QPushButton
 
     time_display_format: str
 
@@ -51,6 +52,7 @@ class MainWindow(QMainWindow):
         uic.loadUi("ui/main.ui", self)
         self.time_display_format = self.timeDisplay.text()
         self._reset_controls()
+        self._connect_signals()
         self.show()
 
         if not windowed:
@@ -58,11 +60,19 @@ class MainWindow(QMainWindow):
 
         self._init_realtime_worker(realtime_provider)
 
-    def _reset_controls(self):
+    def hide_notification(self):
+        self.icon.setPixmap(QPixmap())
         self.appName.setText("")
         self.title.setText("")
         self.content.setText("")
+        self.hideButton.setVisible(False)
+
+    def _reset_controls(self):
+        self.hide_notification()
         self.timeDisplay.setText("Oczekuję na czas")
+
+    def _connect_signals(self):
+        self.hideButton.clicked.connect(self.hide_notification)
 
     def _init_realtime_worker(self, realtime_provider: RealtimeProvider):
         worker = RealtimeWorker(realtime_provider)
@@ -75,6 +85,7 @@ class MainWindow(QMainWindow):
         self.appName.setText(notification.appName)
         self.title.setText(notification.title)
         self.content.setText(notification.content)
+        self.hideButton.setVisible(True)
 
     def _on_time_updated(self, time: str):
         self.timeDisplay.setText(self.time_display_format % time)

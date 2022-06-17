@@ -118,13 +118,13 @@ QLabel {
      <rect>
       <x>10</x>
       <y>180</y>
-      <width>461</width>
+      <width>381</width>
       <height>131</height>
      </rect>
     </property>
     <property name="maximumSize">
      <size>
-      <width>461</width>
+      <width>381</width>
       <height>16777215</height>
      </size>
     </property>
@@ -176,6 +176,35 @@ QLabel {
     </property>
     <property name="text">
      <string>%s</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="hideButton">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>180</y>
+      <width>71</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border: 2px solid white;
+border-radius: 10px;
+background-color: #222;
+color: white;</string>
+    </property>
+    <property name="text">
+     <string>&gt;&gt;
+ukryj</string>
     </property>
    </widget>
   </widget>
